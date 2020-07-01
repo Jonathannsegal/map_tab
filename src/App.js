@@ -1,23 +1,45 @@
-import React from 'react';
+import React from "react";
+import mapboxgl from 'mapbox-gl';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+mapboxgl.accessToken = process.env.REACT_APP_ACCESS_TOKEN;
+
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      lng: 5,
+      lat: 34,
+      zoom: 2
+    };
+  }
+
+  componentDidMount() {
+    const map = new mapboxgl.Map({
+      container: this.mapContainer,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [this.state.lng, this.state.lat],
+      zoom: this.state.zoom
+    });
+
+    map.on('move', () => {
+      this.setState({
+        lng: map.getCenter().lng.toFixed(4),
+        lat: map.getCenter().lat.toFixed(4),
+        zoom: map.getZoom().toFixed(2)
+      });
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        <div className='sidebarStyle'>
+          <div>Longitude: {this.state.lng} | Latitude: {this.state.lat} | Zoom: {this.state.zoom}</div>
+        </div>
+        <div ref={el => this.mapContainer = el} className='mapContainer' />
+      </div>
+    )
+  }
 }
 
 export default App;
