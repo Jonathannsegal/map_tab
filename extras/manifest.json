@@ -1,0 +1,16 @@
+{
+    "name": "maptab",
+    "offline_enabled": true,
+    "short_name": "maptab",
+    "description": "Find new cool places every time you open a tab!",
+    "version": "0.1.0",
+    "icons": { 
+      "16": "icon16.png",
+      "48": "icon48.png",
+     "128": "icon128.png" 
+    },
+    "chrome_url_overrides": {
+      "newtab": "index.html"
+    },
+    "manifest_version": 2
+  }
