@@ -7,7 +7,6 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      city: 0,
       lng: 0,
       lat: 0,
       zoom: 12.5
@@ -15,36 +14,34 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    fetch("http://geodb-free-service.wirefreethought.com/v1/geo/cities?hateoasMode=off")
-      .then(res => res.json())
-      .then(
-        (result) => {
-          fetch(`http://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=1&offset=${Math.floor(Math.random() * result.metadata.totalCount)}&hateoasMode=off`)
-            .then(res => res.json())
-            .then(
-              (result) => {
-                map.jumpTo({
-                  center: [
-                    result.data[0].longitude.toFixed(4),
-                    result.data[0].latitude.toFixed(4)
-                  ]
-                });
-              },
-              (error) => {
-                this.setState({
-                  isLoaded: true,
-                  error
-                });
-              }
-            )
-        },
-        (error) => {
-          this.setState({
-            isLoaded: true,
-            error
-          });
+
+    fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/cities", {
+      "method": "GET",
+      "headers": {
+        "x-rapidapi-host": "wft-geo-db.p.rapidapi.com",
+        "x-rapidapi-key": process.env.REACT_APP_API_KEY
+      }
+    }).then(function (response) {
+      return response.json();
+    }).then(function (data) {
+      return fetch(`https://wft-geo-db.p.rapidapi.com/v1/geo/cities/${Math.floor(Math.random() * data.metadata.totalCount)}`, {
+        "method": "GET",
+        "headers": {
+          "x-rapidapi-host": "wft-geo-db.p.rapidapi.com",
+          "x-rapidapi-key": process.env.REACT_APP_API_KEY
         }
-      )
+      });
+    }).then(function (response) {
+      return response.json();
+    }).then(function (data) {
+      console.log(data);
+      map.jumpTo({
+        center: [
+          data[0]?.longitude.toFixed(4) ?? 0,
+          data[0]?.latitude.toFixed(4) ?? 0
+        ]
+      });
+    });
 
     const map = new mapboxgl.Map({
       container: this.mapContainer,
