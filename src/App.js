@@ -7,13 +7,45 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      lng: 5,
-      lat: 34,
-      zoom: 2
+      city: 0,
+      lng: 0,
+      lat: 0,
+      zoom: 12.5
     };
   }
 
   componentDidMount() {
+    fetch("http://geodb-free-service.wirefreethought.com/v1/geo/cities?hateoasMode=off")
+      .then(res => res.json())
+      .then(
+        (result) => {
+          fetch(`http://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=1&offset=${Math.floor(Math.random() * result.metadata.totalCount)}&hateoasMode=off`)
+            .then(res => res.json())
+            .then(
+              (result) => {
+                map.jumpTo({
+                  center: [
+                    result.data[0].longitude.toFixed(4),
+                    result.data[0].latitude.toFixed(4)
+                  ]
+                });
+              },
+              (error) => {
+                this.setState({
+                  isLoaded: true,
+                  error
+                });
+              }
+            )
+        },
+        (error) => {
+          this.setState({
+            isLoaded: true,
+            error
+          });
+        }
+      )
+
     const map = new mapboxgl.Map({
       container: this.mapContainer,
       style: 'mapbox://styles/mapbox/streets-v11',
@@ -33,9 +65,6 @@ class App extends React.Component {
   render() {
     return (
       <div>
-        <div className='sidebarStyle'>
-          <div>Longitude: {this.state.lng} | Latitude: {this.state.lat} | Zoom: {this.state.zoom}</div>
-        </div>
         <div ref={el => this.mapContainer = el} className='mapContainer' />
       </div>
     )
