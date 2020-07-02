@@ -1,2 +1,2 @@
 # map_tab
-🌎 Chrome extension that shows you a cool place when you open a new tab!
+🌎 A project that brings information about cities to the world!
