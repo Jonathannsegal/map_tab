@@ -1,5 +1,10 @@
-import React from "react";
+import React from 'react';
 import mapboxgl from 'mapbox-gl';
+import lottie from 'lottie-web';
+import animationData from './dice.json';
+
+let animObj = null;
+let map = null;
 
 mapboxgl.accessToken = process.env.REACT_APP_ACCESS_TOKEN;
 
@@ -9,45 +14,35 @@ class App extends React.Component {
     this.state = {
       lng: 0,
       lat: 0,
-      zoom: 12.5
+      zoom: 13,
+      data: []
     };
+
+    this.findCity = this.findCity.bind(this);
   }
 
   componentDidMount() {
-
-    fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/cities", {
-      "method": "GET",
-      "headers": {
-        "x-rapidapi-host": "wft-geo-db.p.rapidapi.com",
-        "x-rapidapi-key": process.env.REACT_APP_API_KEY
-      }
-    }).then(function (response) {
-      return response.json();
-    }).then(function (data) {
-      return fetch(`https://wft-geo-db.p.rapidapi.com/v1/geo/cities/${Math.floor(Math.random() * data.metadata.totalCount)}`, {
-        "method": "GET",
-        "headers": {
-          "x-rapidapi-host": "wft-geo-db.p.rapidapi.com",
-          "x-rapidapi-key": process.env.REACT_APP_API_KEY
-        }
-      });
-    }).then(function (response) {
-      return response.json();
-    }).then(function (data) {
-      console.log(data);
-      map.jumpTo({
-        center: [
-          data[0]?.longitude.toFixed(4) ?? 0,
-          data[0]?.latitude.toFixed(4) ?? 0
-        ]
-      });
+    animObj = lottie.loadAnimation({
+      container: this.animBox,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      animationData: animationData
     });
 
-    const map = new mapboxgl.Map({
+    map = new mapboxgl.Map({
       container: this.mapContainer,
-      style: 'mapbox://styles/mapbox/streets-v11',
+      style: 'mapbox://styles/mapbox/satellite-v9',
       center: [this.state.lng, this.state.lat],
       zoom: this.state.zoom
+    });
+
+    this.findCity();
+
+    animObj.addEventListener("enterFrame", function (animation) {
+      if (animation.currentTime > (animObj.totalFrames - 1)) {
+        animObj.pause();
+      }
     });
 
     map.on('move', () => {
@@ -59,12 +54,58 @@ class App extends React.Component {
     });
   }
 
+  findCity() {
+    fetch("http://geodb-free-service.wirefreethought.com/v1/geo/cities?hateoasMode=off")
+      .then(res => res.json())
+      .then(
+        (result) => {
+          fetch(`http://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=1&offset=${Math.floor(Math.random() * result.metadata.totalCount)}&hateoasMode=off`)
+            .then(res => res.json())
+            .then(
+              (result) => {
+                this.setState({
+                  data: result.data[0]
+                });
+                map.jumpTo({
+                  center: [
+                    result.data[0].longitude.toFixed(4),
+                    result.data[0].latitude.toFixed(4)
+                  ]
+                });
+              },
+              (error) => {
+                this.setState({
+                  isLoaded: true,
+                  error
+                });
+              }
+            )
+        },
+        (error) => {
+          this.setState({
+            isLoaded: true,
+            error
+          });
+        }
+      )
+  }
+
+  handlePlay() {
+    animObj.play();
+  }
+
   render() {
     return (
-      <div>
-        <div ref={el => this.mapContainer = el} className='mapContainer' />
-      </div>
-    )
+      <>
+        <div id="button" ref={ref => this.animBox = ref} onClick={() =>{
+          this.handlePlay();
+          this.findCity();
+        }} />
+        <div>
+          <div ref={el => this.mapContainer = el} className='mapContainer' />
+        </div>
+      </>
+    );
   }
 }
 
