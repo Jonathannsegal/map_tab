@@ -28,6 +28,16 @@ body {
   font-weight: bold;
 }
 
+.sidebar {
+  display: inline-block;
+  position: absolute;
+  left: 0;
+  z-index: 1 !important;
+  background-color: white;
+  width: 200px;
+  height: 100%;
+}
+
 .mapContainer {
   position: absolute;
   top: 0;
