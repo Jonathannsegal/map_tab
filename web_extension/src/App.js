@@ -14,7 +14,7 @@ class App extends React.Component {
     this.state = {
       lng: 0,
       lat: 0,
-      zoom: 13,
+      zoom: 14,
       data: [],
       image: ''
     };
@@ -57,57 +57,43 @@ class App extends React.Component {
 
   findCity() {
     fetch("http://geodb-free-service.wirefreethought.com/v1/geo/cities?hateoasMode=off")
-      .then(res => res.json())
-      .then(
-        (result) => {
-          fetch(`http://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=1&offset=${Math.floor(Math.random() * result.metadata.totalCount)}&hateoasMode=off`)
-            .then(res => res.json())
-            .then(
-              (result) => {
-                this.setState({
-                  data: result.data[0]
-                });
-                this.fetchCityData(`${result.data[0]?.city}, ${result.data[0]?.country}`);
-                map.jumpTo({
-                  center: [
-                    result.data[0].longitude.toFixed(4),
-                    result.data[0].latitude.toFixed(4)
-                  ],
-                  zoom: 13
-                });
-              },
-              (error) => {
-                this.setState({
-                  isLoaded: true,
-                  error
-                });
-              }
-            )
-        },
-        (error) => {
-          this.setState({
-            isLoaded: true,
-            error
-          });
-        }
-      );
+    .then(res => res.json())
+    .then(
+      (result) => {
+        fetch(`http://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=1&offset=${Math.floor(Math.random() * result.metadata.totalCount)}&hateoasMode=off`)
+          .then(res => res.json())
+          .then(
+            (result) => {
+              this.setState({
+                data: result.data[0]
+              });
+              this.fetchCityData(`${result.data[0]?.city}, ${result.data[0]?.country}`);
+              map.jumpTo({
+                center: [
+                  result.data[0].longitude.toFixed(4),
+                  result.data[0].latitude.toFixed(4)
+                ],
+                zoom: 14
+              });
+            })
+      });
   }
 
 
   fetchCityData(searchQuery) {
     fetch(`http://allow-any-origin.appspot.com/https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${searchQuery}&inputtype=textquery&fields=photos&key=${process.env.REACT_APP_GOOGLE_PLACES_API_KEY}`)
-      .then(res => res.json())
-      .then(
-        (result) => {
-          fetch(`http://allow-any-origin.appspot.com/https://maps.googleapis.com/maps/api/place/photo?maxheight=800&photoreference=${result?.candidates[0]?.photos[0]?.photo_reference}&key=${process.env.REACT_APP_GOOGLE_PLACES_API_KEY}`)
-            .then(res => res.blob())
-            .then(
-              (image) => {
-                this.setState({
-                  image: URL.createObjectURL(image)
-                });
-              });
-        });
+    .then(res => res.json())
+    .then(
+      (result) => {
+        fetch(`http://allow-any-origin.appspot.com/https://maps.googleapis.com/maps/api/place/photo?maxheight=800&photoreference=${result?.candidates[0]?.photos[0]?.photo_reference}&key=${process.env.REACT_APP_GOOGLE_PLACES_API_KEY}`)
+        .then(res => res.blob())
+        .then(
+          (image) => {
+            this.setState({
+              image: URL.createObjectURL(image)
+            });
+          });
+      });
   }
 
   handlePlay() {
@@ -122,8 +108,10 @@ class App extends React.Component {
           this.findCity();
         }} />
         <div className="sidebar">
-          <img width="100%" src={this.state.image} alt="city" />
-          <p>{this.state.data?.city}</p>
+          <img src={this.state.image} alt="city" />
+          <h1>{this.state.data?.city}</h1>
+          <p>{this.state.data?.country}</p>
+          <p>{`${this.state.lat}, ${this.state.lng}`}</p>
         </div>
         <div>
           <div ref={el => this.mapContainer = el} className='mapContainer' />
