@@ -33,37 +33,52 @@ export default function Home() {
   }, []);
 
   function findCity() {
-    fetch("http://geodb-free-service.wirefreethought.com/v1/geo/cities?hateoasMode=off")
+    fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/cities", {
+      "method": "GET",
+      "headers": {
+        "x-rapidapi-host": "wft-geo-db.p.rapidapi.com",
+        "x-rapidapi-key": process.env.X_RAPIDAPI_KEY
+      }
+    })
       .then(res => res.json())
       .then(
         (result) => {
-          fetch(`http://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=1&offset=${Math.floor(Math.random() * result.metadata.totalCount)}&hateoasMode=off`)
-            .then(res => res.json())
-            .then(
-              (result) => {
-                setInfo(x => ({ ...x, data: result }));
-                fetchCityData(`${result.data[0]?.city}, ${result.data[0]?.country}`);
-                setViewport(x => ({
-                  ...x,
-                  longitude: parseInt(result.data[0]?.longitude.toFixed(4)),
-                  latitude: parseInt(result.data[0]?.latitude.toFixed(4))
-                }));
-              })
+          setTimeout(function () {
+            fetch(`https://wft-geo-db.p.rapidapi.com/v1/geo/cities?limit=1&offset=${Math.floor(Math.random() * result.metadata.totalCount)}`, {
+              "method": "GET",
+              "headers": {
+                "x-rapidapi-host": "wft-geo-db.p.rapidapi.com",
+                "x-rapidapi-key": process.env.X_RAPIDAPI_KEY
+              }
+            })
+              .then(res => res.json())
+              .then(
+                (result) => {
+                  setInfo(x => ({ ...x, data: result }));
+                  fetchCityData(`${result.data[0]?.city}, ${result.data[0]?.country}`);
+                  setViewport(x => ({
+                    ...x,
+                    longitude: parseInt(result.data[0]?.longitude.toFixed(4)),
+                    latitude: parseInt(result.data[0]?.latitude.toFixed(4)),
+                    zoom: 14 
+                  }));
+                })
+          }, 2000); // Because I'm on the free tier
         });
   };
 
   function fetchCityData(searchQuery) {
-    fetch(`http://allow-any-origin.appspot.com/https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${searchQuery}&inputtype=textquery&fields=photos&key=${process.env.REACT_APP_GOOGLE_PLACES_API_KEY}`)
-    .then(res => res.json())
-    .then(
-      (result) => {
-        fetch(`http://allow-any-origin.appspot.com/https://maps.googleapis.com/maps/api/place/photo?maxheight=800&photoreference=${result?.candidates[0]?.photos[0]?.photo_reference}&key=${process.env.REACT_APP_GOOGLE_PLACES_API_KEY}`)
-        .then(res => res.blob())
-        .then(
-          (image) => {
-            setInfo(x => ({ ...x, image: URL.createObjectURL(image) }))
-          });
-      });
+    fetch(`https://allow-any-origin.appspot.com/https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${searchQuery}&inputtype=textquery&fields=photos&key=${process.env.REACT_APP_GOOGLE_PLACES_API_KEY}`)
+      .then(res => res.json())
+      .then(
+        (result) => {
+          fetch(`https://allow-any-origin.appspot.com/https://maps.googleapis.com/maps/api/place/photo?maxheight=800&photoreference=${result?.candidates[0]?.photos[0]?.photo_reference}&key=${process.env.REACT_APP_GOOGLE_PLACES_API_KEY}`)
+            .then(res => res.blob())
+            .then(
+              (image) => {
+                setInfo(x => ({ ...x, image: URL.createObjectURL(image) }))
+              });
+        });
   }
 
   function handleClick() {
