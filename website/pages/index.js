@@ -161,6 +161,13 @@ export default function Home() {
           background-color: white;
           width: 300px;
         }
+        
+        .sidebar img {
+          border-radius: 8px 8px 0 0;
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+        }
 
         .bottombar {
           -webkit-font-smoothing: antialiased;
@@ -177,13 +184,6 @@ export default function Home() {
           z-index: 1 !important;
           background-color: white;
           width: 250px;
-        }
-        
-        .sidebar img {
-          border-radius: 8px 8px 0 0;
-          width: 100%;
-          height: 200px;
-          object-fit: cover;
         }
       `}</style>
 

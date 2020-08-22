@@ -48,6 +48,23 @@ body {
   object-fit: cover;
 }
 
+.bottombar {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  border-bottom: 1px solid #E8EAED;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  border-radius: 8px;
+  margin: 2em 2em 2em 0em;
+  display: inline-block;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1 !important;
+  background-color: white;
+  width: 250px;
+}
+
 .mapContainer {
   position: absolute;
   top: 0;

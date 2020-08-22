@@ -113,6 +113,9 @@ class App extends React.Component {
           <p>{this.state.data?.country}</p>
           <p>{`${this.state.lat}, ${this.state.lng}`}</p>
         </div>
+        <div className="bottombar">
+          <p>Star on <a href="https://github.com/Jonathannsegal/map_tab">Github</a></p>
+        </div>
         <div>
           <div ref={el => this.mapContainer = el} className='mapContainer' />
         </div>
