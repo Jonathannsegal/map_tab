@@ -119,6 +119,10 @@ export default function Home() {
           <p>{info.data?.data[0]?.country}</p>
           <p>{`${info.data?.data[0]?.latitude.toFixed(4)}, ${info.data?.data[0]?.longitude.toFixed(4)}`}</p>
         </div>
+        <div className="bottombar">
+          <p>Star on <a href="https://github.com/Jonathannsegal/map_tab">Github</a></p>
+          <p>Get <a href="https://chrome.google.com/webstore/detail/maptab/jokkbgbdomfhondepefdoapgabmiomjl?hl=en">Chrome Extension</a></p>
+        </div>
         <ReactMapGL
           {...viewport}
           mapStyle="mapbox://styles/mapbox/satellite-streets-v11"
@@ -156,6 +160,23 @@ export default function Home() {
           z-index: 1 !important;
           background-color: white;
           width: 300px;
+        }
+
+        .bottombar {
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          text-align: center;
+          border-bottom: 1px solid #E8EAED;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          border-radius: 8px;
+          margin: 2em 2em 2em 0em;
+          display: inline-block;
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          z-index: 1 !important;
+          background-color: white;
+          width: 250px;
         }
         
         .sidebar img {
