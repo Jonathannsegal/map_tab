@@ -3,125 +3,100 @@ import mapboxgl from 'mapbox-gl';
 import lottie from 'lottie-web';
 import animationData from './dice.json';
 
-let animObj = null;
-let map = null;
-
 mapboxgl.accessToken = process.env.REACT_APP_ACCESS_TOKEN;
 
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      lng: 0,
-      lat: 0,
-      zoom: 14,
-      data: [],
-      image: ''
-    };
+export default class App extends React.Component {
+  state = {
+    lng: 0,
+    lat: 0,
+    zoom: 14,
+    data: {},
+    image: '',
+    cities: ["Sydney", "New York City", "Los Angeles", "London"],
+    map: null,
+    service: null
+  };
 
-    this.findCity = this.findCity.bind(this);
-  }
+  animBox = React.createRef();
+  mapContainer = React.createRef();
+  animObj = null;
 
   componentDidMount() {
-    animObj = lottie.loadAnimation({
-      container: this.animBox,
+    this.initializeLottieAnimation();
+    this.initializeMap();
+  }
+
+  componentWillUnmount() {
+    if (this.animObj) {
+      this.animObj.destroy();
+    }
+    if (this.state.map) {
+      this.state.map.remove();
+    }
+  }
+
+  initializeLottieAnimation = () => {
+    this.animObj = lottie.loadAnimation({
+      container: this.animBox.current,
       renderer: 'svg',
-      loop: true,
+      loop: false,
       autoplay: true,
-      animationData: animationData
+      animationData
+    });
+  }
+
+  initializeMap = () => {
+    const map = new google.maps.Map(this.mapContainer.current, {
+      center: { lat: -33.867, lng: 151.195 },
+      zoom: 15
     });
 
-    map = new mapboxgl.Map({
-      container: this.mapContainer,
-      style: 'mapbox://styles/mapbox/satellite-streets-v11',
-      center: [this.state.lng, this.state.lat],
-      zoom: this.state.zoom
-    });
+    this.setState({ map }, this.randomizeLocation);
+  }
 
-    this.findCity();
+  randomizeLocation = () => {
+    const { cities, map } = this.state;
+    const selectedCity = cities[Math.floor(Math.random() * cities.length)];
+    const request = {
+      query: selectedCity,
+      fields: ['name', 'geometry', 'photos']
+    };
 
-    animObj.addEventListener("enterFrame", function (animation) {
-      if (animation.currentTime > (animObj.totalFrames - 1)) {
-        animObj.pause();
+    const service = new google.maps.places.PlacesService(map);
+    service.findPlaceFromQuery(request, (results, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+        map.setCenter(results[0].geometry.location);
+        this.setState({
+          lng: results[0].geometry.location.lng(),
+          lat: results[0].geometry.location.lat(),
+          data: { city: results[0].name },
+          image: results[0].photos ? results[0].photos[0].getUrl() : ''
+        });
       }
     });
-
-    map.on('move', () => {
-      this.setState({
-        lng: map.getCenter().lng.toFixed(4),
-        lat: map.getCenter().lat.toFixed(4),
-        zoom: map.getZoom().toFixed(2)
-      });
-    });
   }
 
-  findCity() {
-    fetch("http://geodb-free-service.wirefreethought.com/v1/geo/cities?hateoasMode=off")
-    .then(res => res.json())
-    .then(
-      (result) => {
-        fetch(`http://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=1&offset=${Math.floor(Math.random() * result.metadata.totalCount)}&hateoasMode=off`)
-          .then(res => res.json())
-          .then(
-            (result) => {
-              this.setState({
-                data: result.data[0]
-              });
-              this.fetchCityData(`${result.data[0]?.city}, ${result.data[0]?.country}`);
-              map.jumpTo({
-                center: [
-                  result.data[0].longitude.toFixed(4),
-                  result.data[0].latitude.toFixed(4)
-                ],
-                zoom: 14
-              });
-            })
-      });
-  }
-
-
-  fetchCityData(searchQuery) {
-    fetch(`http://allow-any-origin.appspot.com/https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${searchQuery}&inputtype=textquery&fields=photos&key=${process.env.REACT_APP_GOOGLE_PLACES_API_KEY}`)
-    .then(res => res.json())
-    .then(
-      (result) => {
-        fetch(`http://allow-any-origin.appspot.com/https://maps.googleapis.com/maps/api/place/photo?maxheight=800&photoreference=${result?.candidates[0]?.photos[0]?.photo_reference}&key=${process.env.REACT_APP_GOOGLE_PLACES_API_KEY}`)
-        .then(res => res.blob())
-        .then(
-          (image) => {
-            this.setState({
-              image: URL.createObjectURL(image)
-            });
-          });
-      });
-  }
-
-  handlePlay() {
-    animObj.play();
+  handlePlay = () => {
+    this.animObj.goToAndPlay(0);
+    this.randomizeLocation();
   }
 
   render() {
     return (
       <>
-        <div id="button" ref={ref => this.animBox = ref} onClick={() => {
-          this.handlePlay();
-          this.findCity();
-        }} />
+        <div id="button" ref={this.animBox} onClick={this.handlePlay} />
         <div className="sidebar">
           <img src={this.state.image} alt="city" />
-          <h1>{this.state.data?.city}</h1>
-          <p>{this.state.data?.country}</p>
+          <h1>{this.state.data.city}</h1>
           <p>{`${this.state.lat}, ${this.state.lng}`}</p>
         </div>
         <div className="bottombar">
           <p>Star on <a href="https://github.com/Jonathannsegal/map_tab">Github</a></p>
         </div>
         <div>
-          <div ref={el => this.mapContainer = el} className='mapContainer' />
+          <div ref={this.mapContainer} className="mapContainer" />
         </div>
       </>
     );
   }
 }
-
-export default App;

@@ -30,7 +30,7 @@ body {
 
 .sidebar {
   border-bottom: 1px solid #E8EAED;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   border-radius: 8px;
   margin: 2em 0 2em 2em;
   display: inline-block;
@@ -53,7 +53,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   border-bottom: 1px solid #E8EAED;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   border-radius: 8px;
   margin: 2em 2em 2em 0em;
   display: inline-block;
