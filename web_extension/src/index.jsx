@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client'; // Updated import
 import './index.css';
-import App from './App';
+import App from './App.jsx';
 
 // Select the container where the app will be mounted
 const container = document.getElementById('root');

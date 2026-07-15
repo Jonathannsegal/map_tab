@@ -1,208 +1,66 @@
 import Head from 'next/head'
-import { useState, useEffect } from 'react';
-import ReactMapGL from 'react-map-gl';
-import dynamic from 'next/dynamic';
+import { useMemo, useState } from 'react'
 
-const Lottie = dynamic(() => import('react-lottie'), { ssr: false });
-import * as dice from '../public/dice.json'
+const cities = [
+  { name: 'Sydney', country: 'Australia', latitude: -33.8688, longitude: 151.2093 },
+  { name: 'New York City', country: 'United States', latitude: 40.7128, longitude: -74.006 },
+  { name: 'Los Angeles', country: 'United States', latitude: 34.0522, longitude: -118.2437 },
+  { name: 'London', country: 'United Kingdom', latitude: 51.5072, longitude: -0.1276 },
+  { name: 'Tokyo', country: 'Japan', latitude: 35.6762, longitude: 139.6503 },
+  { name: 'Cape Town', country: 'South Africa', latitude: -33.9249, longitude: 18.4241 },
+]
 
-const diceOptions = {
-  loop: true,
-  autoplay: true,
-  animationData: dice.default,
-  rendererSettings: {
-    preserveAspectRatio: 'xMidYMid slice'
-  }
-};
+function mapUrl(city) {
+  const delta = 0.08
+  const bbox = [city.longitude - delta, city.latitude - delta, city.longitude + delta, city.latitude + delta]
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox.join('%2C')}&layer=mapnik&marker=${city.latitude}%2C${city.longitude}`
+}
 
 export default function Home() {
-  const [viewport, setViewport] = useState({
-    width: '100vw',
-    height: '100vh',
-    latitude: 0,
-    longitude: 0,
-    zoom: 14,
-  });
-  const [info, setInfo] = useState({
-    image: ''
-  });
-  const [animation, setAnimation] = useState({
-    isPaused: false
-  });
+  const [cityIndex, setCityIndex] = useState(0)
+  const city = cities[cityIndex]
+  const src = useMemo(() => mapUrl(city), [city])
 
-  useEffect(() => {
-    findCity();
-  }, []);
-
-  function findCity() {
-    fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/cities", {
-      "method": "GET",
-      "headers": {
-        "x-rapidapi-host": "wft-geo-db.p.rapidapi.com",
-        "x-rapidapi-key": process.env.X_RAPIDAPI_KEY
-      }
+  function randomize() {
+    setCityIndex(current => {
+      if (cities.length < 2) return current
+      let next = current
+      while (next === current) next = Math.floor(Math.random() * cities.length)
+      return next
     })
-      .then(res => res.json())
-      .then(
-        (result) => {
-          setTimeout(function () {
-            fetch(`https://wft-geo-db.p.rapidapi.com/v1/geo/cities?limit=1&offset=${Math.floor(Math.random() * result.metadata.totalCount)}`, {
-              "method": "GET",
-              "headers": {
-                "x-rapidapi-host": "wft-geo-db.p.rapidapi.com",
-                "x-rapidapi-key": process.env.X_RAPIDAPI_KEY
-              }
-            })
-              .then(res => res.json())
-              .then(
-                (result) => {
-                  setInfo(x => ({ ...x, data: result }));
-                  fetchCityData(`${result.data[0]?.city}, ${result.data[0]?.country}`);
-                  setViewport(x => ({
-                    ...x,
-                    longitude: parseInt(result.data[0]?.longitude.toFixed(4)),
-                    latitude: parseInt(result.data[0]?.latitude.toFixed(4)),
-                    zoom: 14 
-                  }));
-                })
-          }, 2000); // Because I'm on the free tier
-        });
-  };
-
-  function fetchCityData(searchQuery) {
-    fetch(`https://allow-any-origin.appspot.com/https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${searchQuery}&inputtype=textquery&fields=photos&key=${process.env.REACT_APP_GOOGLE_PLACES_API_KEY}`)
-      .then(res => res.json())
-      .then(
-        (result) => {
-          fetch(`https://allow-any-origin.appspot.com/https://maps.googleapis.com/maps/api/place/photo?maxheight=800&photoreference=${result?.candidates[0]?.photos[0]?.photo_reference}&key=${process.env.REACT_APP_GOOGLE_PLACES_API_KEY}`)
-            .then(res => res.blob())
-            .then(
-              (image) => {
-                setInfo(x => ({ ...x, image: URL.createObjectURL(image) }))
-              });
-        });
   }
-
-  function handleClick() {
-    setAnimation(x => ({ ...x, isPaused: false }));
-    findCity();
-  };
 
   return (
     <>
       <Head>
         <title>Map Tab</title>
+        <meta name="description" content="Discover a new city whenever you roll the map." />
         <link rel="icon" href="/favicon.ico" />
-        <link href='https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.css' rel='stylesheet' />
       </Head>
       <main>
-        <div id="button" onClick={() => handleClick()}>
-          <Lottie
-            {...animation}
-            options={diceOptions}
-            isClickToPauseDisabled={true}
-            eventListeners={
-              [
-                {
-                  eventName: 'enterFrame',
-                  callback: obj => {
-                    if (obj.currentTime > (obj.totalTime - 1)) {
-                      setAnimation(x => ({ ...x, isPaused: true }));
-                    }
-                  },
-                },
-              ]
-            }
-          />
-        </div>
-        <div className="sidebar">
-          <img src={info.image} alt="city" />
-          <h1>{info.data?.data[0]?.city}</h1>
-          <p>{info.data?.data[0]?.country}</p>
-          <p>{`${info.data?.data[0]?.latitude.toFixed(4)}, ${info.data?.data[0]?.longitude.toFixed(4)}`}</p>
-        </div>
-        <div className="bottombar">
-          <p>Star on <a href="https://github.com/Jonathannsegal/map_tab">Github</a></p>
-          <p>Get <a href="https://chrome.google.com/webstore/detail/maptab/jokkbgbdomfhondepefdoapgabmiomjl?hl=en">Chrome Extension</a></p>
-        </div>
-        <ReactMapGL
-          {...viewport}
-          mapStyle="mapbox://styles/mapbox/satellite-streets-v11"
-          mapboxApiAccessToken={process.env.REACT_APP_ACCESS_TOKEN}
-          onViewportChange={nextViewport => setViewport(nextViewport)}
-        />
+        <iframe title={`Map of ${city.name}`} src={src} />
+        <button type="button" onClick={randomize} aria-label="Show another city">🎲</button>
+        <section>
+          <h1>{city.name}</h1>
+          <p>{city.country}</p>
+          <p>{city.latitude.toFixed(4)}, {city.longitude.toFixed(4)}</p>
+        </section>
+        <footer>
+          <a href="https://github.com/Jonathannsegal/map_tab">View source on GitHub</a>
+        </footer>
       </main>
-
       <style jsx>{`
-        #button {
-          cursor: pointer;
-          display: inline-block;
-          position: absolute;
-          right: 0;
-          top: 0;
-          width: 5em;
-          height: 5em;
-          margin-top: 5px;
-          margin-right: 15px;
-          z-index: 1 !important;
-          font-weight: bold;
-        }
-
-        .sidebar {
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-          text-align: center;
-          border-bottom: 1px solid #E8EAED;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-          border-radius: 8px;
-          margin: 2em 0 2em 2em;
-          display: inline-block;
-          position: absolute;
-          left: 0;
-          z-index: 1 !important;
-          background-color: white;
-          width: 300px;
-        }
-        
-        .sidebar img {
-          border-radius: 8px 8px 0 0;
-          width: 100%;
-          height: 200px;
-          object-fit: cover;
-        }
-
-        .bottombar {
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-          text-align: center;
-          border-bottom: 1px solid #E8EAED;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-          border-radius: 8px;
-          margin: 2em 2em 2em 0em;
-          display: inline-block;
-          position: absolute;
-          right: 0;
-          bottom: 0;
-          z-index: 1 !important;
-          background-color: white;
-          width: 250px;
-        }
+        main { min-height: 100vh; position: relative; overflow: hidden; font-family: system-ui, sans-serif; }
+        iframe { border: 0; height: 100vh; width: 100%; }
+        button { position: absolute; right: 20px; top: 20px; z-index: 2; width: 64px; height: 64px; border: 0; border-radius: 50%; font-size: 34px; cursor: pointer; box-shadow: 0 3px 12px rgba(0,0,0,.3); background: white; }
+        section, footer { position: absolute; z-index: 2; background: white; border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.25); padding: 18px 22px; }
+        section { left: 24px; top: 24px; min-width: 250px; }
+        section h1 { margin: 0 0 10px; }
+        section p { margin: 5px 0; }
+        footer { bottom: 24px; right: 24px; }
+        footer a { color: #075985; }
       `}</style>
-
-      <style jsx global>{`
-        html,
-        body {
-          padding: 0;
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-            sans-serif;
-        }
-
-        * {
-          box-sizing: border-box;
-        }
-      `}</style>
+      <style jsx global>{`html, body { margin: 0; } * { box-sizing: border-box; }`}</style>
     </>
   )
 }

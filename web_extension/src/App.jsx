@@ -1,9 +1,4 @@
 import React from 'react';
-import mapboxgl from 'mapbox-gl';
-import lottie from 'lottie-web';
-import animationData from './dice.json';
-
-mapboxgl.accessToken = process.env.REACT_APP_ACCESS_TOKEN;
 
 export default class App extends React.Component {
   state = {
@@ -17,35 +12,23 @@ export default class App extends React.Component {
     service: null
   };
 
-  animBox = React.createRef();
   mapContainer = React.createRef();
-  animObj = null;
 
   componentDidMount() {
-    this.initializeLottieAnimation();
     this.initializeMap();
   }
 
   componentWillUnmount() {
-    if (this.animObj) {
-      this.animObj.destroy();
-    }
     if (this.state.map) {
       this.state.map.remove();
     }
   }
 
-  initializeLottieAnimation = () => {
-    this.animObj = lottie.loadAnimation({
-      container: this.animBox.current,
-      renderer: 'svg',
-      loop: false,
-      autoplay: true,
-      animationData
-    });
-  }
-
   initializeMap = () => {
+    if (!window.google?.maps?.places) {
+      this.setState({ data: { city: 'Google Maps key required' } });
+      return;
+    }
     const map = new google.maps.Map(this.mapContainer.current, {
       center: { lat: -33.867, lng: 151.195 },
       zoom: 15
@@ -77,14 +60,13 @@ export default class App extends React.Component {
   }
 
   handlePlay = () => {
-    this.animObj.goToAndPlay(0);
     this.randomizeLocation();
   }
 
   render() {
     return (
       <>
-        <div id="button" ref={this.animBox} onClick={this.handlePlay} />
+        <button id="button" type="button" onClick={this.handlePlay} aria-label="Show another city">🎲</button>
         <div className="sidebar">
           <img src={this.state.image} alt="city" />
           <h1>{this.state.data.city}</h1>

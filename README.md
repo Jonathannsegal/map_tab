@@ -21,16 +21,16 @@ This project brings information about interesting places to the browser's new-ta
 ```bash
 $ git clone https://github.com/Jonathannsegal/map_tab.git
 $ cd map_tab/web_extension
-$ yarn
-$ yarn dev
+$ npm install
+$ npm run dev
 ```
 
 ## Repository layout
 
 - `web_extension/`: Chrome extension
 - `website/`: public Next.js website deployed on Vercel
-- `api/`: API notes and experiments
-- `server/`: supporting server code
+- `api/`: Rocket 0.5 API experiment
+- `server/`: Express 5 supporting service
 
 ## Historical roadmap 🛠️
 - Add Features to Site
