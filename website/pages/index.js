@@ -1,7 +1,9 @@
 import Head from 'next/head'
 import { useState, useEffect } from 'react';
 import ReactMapGL from 'react-map-gl';
-import Lottie from 'react-lottie'
+import dynamic from 'next/dynamic';
+
+const Lottie = dynamic(() => import('react-lottie'), { ssr: false });
 import * as dice from '../public/dice.json'
 
 const diceOptions = {

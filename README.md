@@ -8,22 +8,31 @@
 
 Map Tab shows a new location at random every time you open a tab. Explore the world before you explore the web!
 
+- Website: [maptab.app](https://maptab.app/)
+- Status: maintained as a portfolio project; the website and extension source remain available here.
+
 ![Mockup](https://drive.google.com/uc?id=1MjF_j6kvPO1ZqUqh4kCQrPgIhq32Bz53)
 
-This project is devoted to brining random information about cities to every platform out there! Currently this is just a chrome extension but I am planning on developing this further. This is just a side project for me so don't expect any consistency but so far it's been fun and I will keep on building it! Add the extension to Chrome and leave a good review 😁 [Add to Chrome](https://chrome.google.com/webstore/detail/maptab/jokkbgbdomfhondepefdoapgabmiomjl)
+This project brings information about interesting places to the browser's new-tab page. The repository contains the Chrome extension, website, API experiments, and supporting tools. [View the Chrome Web Store listing](https://chrome.google.com/webstore/detail/maptab/jokkbgbdomfhondepefdoapgabmiomjl).
 
 
 ## Running Locally 💻
 
 ```bash
 $ git clone https://github.com/Jonathannsegal/map_tab.git
-$ cd map_tab
-$ cd web_extension
+$ cd map_tab/web_extension
 $ yarn
 $ yarn dev
 ```
 
-## TODO 🛠️ [Project](https://github.com/Jonathannsegal/map_tab/projects/1)
+## Repository layout
+
+- `web_extension/`: Chrome extension
+- `website/`: public Next.js website deployed on Vercel
+- `api/`: API notes and experiments
+- `server/`: supporting server code
+
+## Historical roadmap 🛠️
 - Add Features to Site
 - Create API
 - Create Wikipedia Scrapper
