@@ -7,4 +7,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rocket = "0.5.1"
+# HTTP/1 serves this API; disable the unused HTTP/2 feature to remove vulnerable h2.
+rocket = { version = "0.5.1", default-features = false }
